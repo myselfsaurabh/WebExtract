@@ -5,13 +5,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
-from langchain.llms import Ollama
 from langchain_ollama import OllamaLLM
 
 # 🔹 Base URLs
 BASE_URL = "https://cloud.google.com"
-# DOCS_URL = "https://cloud.google.com/deployment-manager/docs/apis"
-DOCS_URL = "https://cloud.google.com/deployment-manager/docs/reference/v2beta"
+DOCS_URL = "https://cloud.google.com/deployment-manager/docs/apis"
+# DOCS_URL = "https://cloud.google.com/deployment-manager/docs/reference/v2beta"
 
 
 def get_links(url):
