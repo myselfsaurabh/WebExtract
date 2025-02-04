@@ -1,11 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
-import os
+import os, ssl
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_ollama import OllamaLLM
+os.environ['SSL_CERT_FILE'] = "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/certifi/cacert.pem"
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 # 🔹 Base URLs
 BASE_URL = "https://cloud.google.com"
@@ -70,7 +73,7 @@ splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 chunks = splitter.split_text(raw_text)
 
 # 🔹 Step 6: Store embeddings in ChromaDB (Fixing persistence issue)
-embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+embedding_function = HuggingFaceEmbeddings(model_name="local_model")
 
 # Create and persist the vectorstore
 vectorstore = Chroma.from_texts(chunks, embedding=embedding_function, persist_directory="./gcp_deployment_vectorstore")
@@ -80,7 +83,7 @@ vectorstore.persist()
 retriever = vectorstore.as_retriever()
 
 # 🔹 Step 8: Load Local Mistral Model
-llm = OllamaLLM(model="mistral:instruct")
+llm = OllamaLLM(model="llama3.2")
 
 # 🔹 Step 9: Create the RAG Chain
 qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
@@ -89,4 +92,5 @@ qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=re
 query = "Write 10 test cases for positive, negative, and edge case scenarios for a v2 API deployment delete HTTP request"
 response = qa_chain.invoke(query)
 
-print("\n🔹 AI Response:\n", response)
+formatted_response = response["result"].replace("\n", "\n🔹 ")
+print("\n🔹 AI Response:\n🔹", formatted_response)
